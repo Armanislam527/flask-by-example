@@ -1,12 +1,8 @@
 #!/bin/bash
 
-# Start Redis in background
-redis-server --daemonize yes
-
-# Initialize database
+# Only run DB migrations, Redis is handled separately
 python manage.py db init
 python manage.py db migrate
 python manage.py db upgrade
 
-# Start Flask application
 exec "$@"

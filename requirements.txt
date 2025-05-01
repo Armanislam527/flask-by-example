@@ -27,3 +27,6 @@ urllib3==1.25.8
 Werkzeug==1.0.0
 python-dotenv
 gunicorn
+nltk
+python-dotenv
+beautifulsoup4
