@@ -26,7 +26,3 @@ SQLAlchemy==1.3.13
 urllib3==1.25.8
 Werkzeug==1.0.0
 python-dotenv
-gunicorn
-nltk
-python-dotenv
-beautifulsoup4

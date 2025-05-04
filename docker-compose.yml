@@ -1,16 +1,10 @@
 services:
-  web:
-    build: .
-    command: python app.py
+  redis:
+    image: redis:7
     ports:
-        - "5000:5000"
-    environment:
-      - APP_SETTINGS=config.DevelopmentConfig
-      - DATABASE_URL=postgresql://flask:password@db/flask_app
-      - REDIS_URL=redis://redis:6379/0
-    depends_on:
-      - db
-      - redis
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
 
   db:
     image: postgres:15
@@ -21,10 +15,41 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  redis:
-    image: redis:7
-    volumes:
-      - redis_data:/data
+  web:
+    build: .
+    command: >
+      bash -c "wait-for-it db:5432 -- 
+      wait-for-it redis:6379 -- 
+      python app.py"
+    ports:
+      - "5000:5000"
+    environment:
+      - APP_SETTINGS=config.DevelopmentConfig
+      - DATABASE_URL=postgresql://flask:password@db/flask_app
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - db
+      - redis
+
+  worker:
+    build: .
+    command: >
+      bash -c "wait-for-it db:5432 -- 
+      wait-for-it redis:6379 -- 
+      python worker.py"
+    depends_on:
+      - db
+      - redis
+
+  migrations:
+    build: .
+    command: >
+      bash -c "wait-for-it db:5432 -- 
+      python manage.py db init || true && 
+      python manage.py db migrate && 
+      python manage.py db upgrade"
+    depends_on:
+      - db
 
 volumes:
   postgres_data:
